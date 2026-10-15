@@ -1,8 +1,8 @@
-# Budget vs Actual Variance Analysis — Power BI Dashboard
+# Budget vs Actual Variance Analysis & Forecast — Power BI Dashboard
 
 > **⚠️ Data Source:** All data in this project is **synthetic and fictional**, generated with Python to simulate a realistic manufacturing budget-vs-actual scenario. It does not represent any real company or real financial results. The budget was also rebuilt independently in Excel.
 
-A Power BI dashboard analyzing budget-to-actual performance for a simulated manufacturing company (FY2025, EUR), using standard costing variance analysis (Price / Rate / Volume / Usage / Efficiency / Activity Variance) across Revenue, Raw Materials, Direct Labor, Inbound Freight, and Repairs & Maintenance.
+A Power BI dashboard analyzing budget-to-actual performance for a simulated manufacturing company (FY2025, EUR), using standard costing variance analysis (Price / Rate / Volume / Usage / Efficiency / Activity Variance) across Revenue, Raw Materials, Direct Labor, Inbound Freight, and Repairs & Maintenance. The dashboard also includes a **9+3 forecast** (Jan–Sep actual + Oct–Dec forecast, prepared at the Sep close), which is compared against both Budget and the final Actual to evaluate forecast accuracy.
 
 
 **Key Results** 
@@ -12,6 +12,9 @@ A Power BI dashboard analyzing budget-to-actual performance for a simulated manu
 3. The largest unfavorable driver was the Nov–Dec raw material price increase (-€1.39M). 
 4. Jan's unplanned equipment breakdown had a net unfavorable impact of €0.99M, reflecting lost revenue and emergency repair costs, partially offset by avoided raw material and freight costs. 
 5. The May–Dec labor rate increase (-€0.55M) and the Sep–Dec freight rate increase (-€0.52M) further reduced gross profit.
+6. The 9+3 forecast anticipated a €1,567K gross profit shortfall vs Budget, equal to 91% of the €1,722K actual shortfall vs Budget. The remaining €155K came from two events not known at the time of the forecast (Nov’s higher hours per unit and Dec’s raw material quality issue) and normal fluctuations.
+7. At the Sep close, 22% of the forecast shortfall vs Budget (€344K of €1,567K) had already occurred; the remaining 78% (€1,223K) was still expected in Oct–Dec, mainly from the Nov–Dec raw material price increase.
+
 
 
 **[View the full report (PDF)](budget_vs_actual.pdf)**
@@ -22,29 +25,31 @@ A Power BI dashboard analyzing budget-to-actual performance for a simulated manu
 
 <img src="screenshots/02_gross_profit_bridge_by_event.png" width="900" alt="Gross Profit Bridge by Event">
 
-<img src="screenshots/03_raw_materials_overview.png" width="900" alt="Raw Materials Overview">
+<img src="screenshots/03_9plus3_forecast.png" width="900" alt="9+3 Forecast">
 
-<img src="screenshots/04_raw_materials_driver_analysis.png" width="900" alt="Raw Materials Driver Analysis">
+<img src="screenshots/04_raw_materials_overview.png" width="900" alt="Raw Materials Overview">
 
-<img src="screenshots/05_raw_materials_variance_details.png" width="900" alt="Raw Materials Variance Details">
+<img src="screenshots/05_raw_materials_driver_analysis.png" width="900" alt="Raw Materials Driver Analysis">
 
-<img src="screenshots/06_capacity_efficiency_analysis.png" width="900" alt="Capacity Utilization">
+<img src="screenshots/06_raw_materials_variance_details.png" width="900" alt="Raw Materials Variance Details">
 
-<img src="screenshots/07_recommendation.png" width="900" alt="Recommendation">
+<img src="screenshots/07_capacity_efficiency_analysis.png" width="900" alt="Capacity Utilization">
 
+<img src="screenshots/08_recommendation.png" width="900" alt="Recommendation">
 The remaining pages are in the [PDF](budget_vs_actual.pdf).
 
 
 ## Project Overview
 
-This project has two parts:
+This project has three parts:
 
-1. **Building the budget** — the budget was constructed bottom-up from a sales volume plan, a budgeted selling price and standard cost assumptions (raw materials price, hours per unit, quantity per unit, etc.). Revenue and Raw Materials scale with sales volume. Inbound Freight scales indirectly, via raw material quantity. Direct Labor – Overtime is incurred only when required hours exceed regular capacity. Two accounts are volume-independent: Direct Labor – Regular, a fixed capacity cost (headcount × standard hours × rate), and Repairs & Maintenance, a fixed operating budget.
+1. **Building a budget** — the budget was constructed bottom-up from a sales volume plan, a budgeted selling price and standard cost assumptions (raw materials price, hours per unit, quantity per unit, etc.). Revenue and Raw Materials scale with sales volume. Inbound Freight scales indirectly, via raw material quantity. Direct Labor – Overtime is incurred only when required hours exceed regular capacity. Two accounts are volume-independent: Direct Labor – Regular, a fixed capacity cost (headcount × standard hours × rate), and Repairs & Maintenance, a fixed operating budget.
 2. **Simulating actuals and analyzing variances** — actual results were generated on top of the budget by introducing random monthly fluctuations plus realistic business events (an equipment breakdown, rate increases, a raw material quality issue, etc.), and the resulting variances were analyzed and visualized in Power BI.
+3. **Building a 9+3 forecast** — a rolling forecast prepared at the Sep close (Jan–Sep actual + Oct–Dec forecast) using only the information available at that time. It was then compared against Budget and against the final Actual.
 
 **Scope:** rather than covering the full income statement, this project focuses on six core accounts: Revenue, Raw Materials, Direct Labor (Regular & Overtime), Inbound Freight, and Repairs & Maintenance. Each account is analyzed with a variance methodology that fits how that cost behaves.
 
-**Notation:** "Units" = sales volume. "Budget Units" and "Budget Selling Price" are the budgeted sales volume and price. "Standard" refers to the price and quantity standards the budget is built on. Every "Actual X" uses that month's actual price/rate/ratio.
+**Notation:** "Units" = sales volume. "Budget Units" and "Budget Selling Price" are the budgeted sales volume and price. "Standard" refers to the price and quantity standards the budget is built on. Every "Actual X" uses that month's actual price/rate/ratio. "9+3 Forecast" = 9 months of actuals (Jan–Sep) plus 3 months of forecast (Oct–Dec); every "Forecast X" uses the forecast price/rate/ratio for that month.
 
 ## Report Pages
 
@@ -55,6 +60,7 @@ Most accounts follow a two-page pattern: an **Overview** page (monthly Budget-vs
 |---|---|---|
 | **Executive Summary** | 1 | Company-wide KPIs (Revenue, COGS, Gross Profit, Gross Margin); Gross Profit Bridge (Budget to Actual) by Account; Variance by Cost Center; Gross Profit and Gross Margin Variance by Month |
 | **Gross Profit Bridge by Event** | 1 | Gross Profit Bridge (Budget to Actual) by Business Event |
+| **9+3 Forecast** | 1 | Gross Profit and Gross Margin KPIs (Budget, Forecast, Actual); Gross Profit Bridge (Budget to Forecast) by Event; Gross Profit Bridge (Forecast to Actual) by Event; forecast accuracy, timing of the shortfall and forecast assumptions |
 | **Revenue** | 2 | Volume/Price Variance KPIs; Budget to Actual Bridge; Selling Price, Units Sold, and full monthly variance detail |
 | **Raw Materials** | 3 | Activity/Usage/Price Variance KPIs; Budget to Actual Bridge; Price, Quantity per Unit, Usage, and full monthly variance detail |
 | **Direct Labor – Regular** | 2 | Variance KPIs; Budget to Actual Bridge; Rate, Hours, and full monthly variance detail |
@@ -81,13 +87,13 @@ The simulated manufacturing company is simplified along the following lines:
 
 ## Data Model
 
-The model follows a **star schema**. `Fact_Budget` and `Fact_Actual` each hold one row per Date × CostCenter × Account, storing an Amount. `Budget_Drivers` and `Actual_Drivers` each hold one row per Date × CostCenter × Account × DriverMetric (e.g., Quantity, Unit Price), storing a DriverValue and its UnitOfMeasure (e.g., Units, EUR/Unit). `Actual_Drivers` also contains four `KnownEvent` rows (Jan and Mar sales volume changes, Jan and Aug repair cost adjustments). All four relate to `Dim_Date` and `Dim_Account` via single-direction, one-to-many relationships. `Assumptions` holds parameters (headcount, truck capacity) not tied to the monthly grain.
+The model follows a **star schema**. `Fact_Budget`, `Fact_Actual` and `Fact_Forecast` each hold one row per Date × CostCenter × Account, storing an Amount. `Budget_Drivers`, `Actual_Drivers` and `Forecast_Drivers` each hold one row per Date × CostCenter × Account × DriverMetric (e.g., Quantity, Unit Price), storing a DriverValue and its UnitOfMeasure (e.g., Units, EUR/Unit). `Actual_Drivers` also contains four `KnownEvent` rows (Jan and Mar sales volume changes, Jan and Aug repair cost adjustments). `Fact_Forecast` and `Forecast_Drivers` cover all twelve months and carry a `DataType` column that marks Jan–Sep as Actual and Oct–Dec as Forecast. All six relate to `Dim_Date` and `Dim_Account` via single-direction, one-to-many relationships. `Assumptions` holds parameters (headcount, truck capacity) not tied to the monthly grain.
 
-`Fact_Budget`, `Fact_Actual`, `Budget_Drivers`, `Actual_Drivers` and `Assumptions` are loaded directly from the sheets of the same name in `Budget_Actual.xlsx`. `Dim_Account` is loaded from the Cost Center sheet, and `Dim_Date` is a calendar table created in Power BI.
+`Fact_Budget`, `Fact_Actual`, `Fact_Forecast`, `Budget_Drivers`, `Actual_Drivers`, `Forecast_Drivers` and `Assumptions` are loaded directly from the sheets of the same name in `Budget_Actual.xlsx`. `Dim_Account` is loaded from the Cost Center sheet, and `Dim_Date` is a calendar table created in Power BI.
 
 <img src="screenshots/model_star_schema.png" width="900" alt="Star Schema">
 
-Eight disconnected bridge tables (from `DAX_measures_and_user_defined_functions.xlsx`) give the step names and sort order for the waterfall charts. They have no relationships to the star schema.
+Ten disconnected bridge tables (from `DAX_measures_and_user_defined_functions.xlsx`) give the step names and sort order for the waterfall charts. They have no relationships to the star schema.
 
 <img src="screenshots/model_bridge_tables_and_measures.png" width="900" alt="Bridge Tables And Measures">
 
@@ -105,7 +111,7 @@ Eight disconnected bridge tables (from `DAX_measures_and_user_defined_functions.
 | Inbound Freight | ROUNDUP(Budget Units × Standard Quantity per unit ÷ Truck Capacity (10 ton/truck)) × Standard Freight Rate (€1,500/truck) |
 | Repairs & Maintenance | €54,000/month; August is €108,000, including a planned major repair. |
 
-*The budget was built both in the Python script and in Excel (`Budget_Model.xlsx`).*
+*The budget was built both in the Python script (`budget_actual_generator.py`) and in Excel (`Budget_Model.xlsx`).*
 
 ### 2. Actual Data Generation
 
@@ -143,7 +149,7 @@ Random noise of up to ±3% simulates normal fluctuation: actual sales volume and
 
 *Actual Regular Hours equals Regular Capacity Hours. Truck Capacity remains the same for both budget and actual data.*
 
-*The actual data was built in the Python script.*
+*The actual was built in the Python script.*
 
 ### 3. Variance Analysis (Power BI Dashboard)
 
@@ -161,7 +167,7 @@ Each account's total variance is decomposed into interpretable variance componen
 | Repairs & Maintenance | Not decomposed — variance attributed directly to one-off events |
 
 <details>
-<summary>📐 Click to expand exact variance formulas for all accounts</summary>
+<summary>📐 Click to expand exact variance formulas for all accounts (Budget vs Actual)</summary>
 
 All variance components are calculated at monthly grain (SUMX over Dim_Date[Month]) and then summed, so annual totals equal the sum of the twelve monthly variances.
 
@@ -206,26 +212,88 @@ All variance components are calculated at monthly grain (SUMX over Dim_Date[Mont
 
 </details>
 
+### 4. 9+3 Forecast
+
+A 9+3 forecast is a rolling forecast prepared at the end of Sep: **Jan–Sep are actuals, Oct–Dec are forecast**. It was built as of the Sep close, using only the information available at that time, and covers the same six accounts as the Budget and Actual. Forecast amounts use the same formulas as the actual cost formulas above, applied to the forecast drivers.
+
+**Forecast assumptions (Oct–Dec):**
+
+| Driver | Forecast Assumption |
+|---|---|
+| Sales volume | Budget |
+| Repairs & Maintenance | Budget |
+| Selling price, regular labor rate, overtime rate, freight rate | Latest actual (Sep) |
+| Raw material price | Oct: latest actual (Sep, €1,300/ton). Nov–Dec: €1,600/ton, because the supplier's price increase had already been announced at the time of the forecast |
+| Hours per unit, raw material quantity per unit | Latest actual (Sep), which equals the standard (10 hours/unit, 2 tons/unit) |
+
+**Not known at the time of the forecast:** Nov's increase in hours per unit (10 → 10.3, training session) and Dec's increase in raw material quantity per unit (2.0 → 2.1, quality issue). Oct–Dec random fluctuations in sales volume and Repairs & Maintenance are also not forecast, since the forecast uses budget values.
+
+*The forecast was built in the Python script*
+
+
+<details>
+<summary>📐 Click to expand exact formulas for the 9+3 Forecast page (Budget vs Forecast and Forecast vs Actual)</summary>
+
+#### Budget vs Forecast (by account)
+Same structure as Budget vs Actual, with Actual replaced by Forecast.
+
+*Revenue*
+- **Volume Variance** = (Forecast Units − Budget Units) × Budget Selling Price
+- **Price Variance** = Forecast Units × (Forecast Selling Price − Budget Selling Price)
+
+*Raw Materials*
+- **Activity Variance** = (Forecast Units − Budget Units) × Standard Quantity per Unit × Standard RM Price
+- **Price Variance** = Forecast Units × Forecast Quantity per Unit × (Forecast RM Price − Standard RM Price)
+
+*Direct Labor – Regular*
+- **Labor Rate Variance** = Forecast Regular Hours × (Forecast Regular Rate − Standard Regular Rate)
+
+*Direct Labor – Overtime*
+- **OT Hours at Standard Efficiency** = MAX(0, Forecast Units × Standard Hours per Unit − Regular Capacity Hours)
+- **Activity Variance** = (OT Hours at Standard Efficiency − Budget OT Hours) × Standard OT Rate
+- **Labor Rate Variance** = Forecast OT Hours × (Forecast OT Rate − Standard OT Rate)
+
+*Inbound Freight*
+- **Activity Variance** = [ROUNDUP(Forecast Units × Standard Quantity per Unit ÷ Truck Capacity) − ROUNDUP(Budget Units × Standard Quantity per Unit ÷ Truck Capacity)] × Standard Freight Rate
+- **Rate Variance** = Forecast Truckloads × (Forecast Freight Rate − Standard Freight Rate)
+
+*Repairs & Maintenance*
+- **Variance** = Forecast R&M Amount − Budget R&M Amount
+
+There is no Usage, Labor Efficiency or Raw Material Quantity per Unit Impact component here: the forecast keeps quantity per unit at the standard 2 tons and hours per unit at the standard 10 hours in every month, because the events that change them are not known at the time of the forecast.
+
+#### Forecast vs Actual
+The Forecast values act as the standard, so the efficiency and usage components are measured and valued at **forecast** prices and rates. Selling price, labor rates, freight rate and raw material price have no Forecast → Actual component because the Oct–Dec actual values equal the forecast.
+
+- **RM Usage Variance** = Actual Units × (Actual Quantity per Unit − Forecast Quantity per Unit) × Forecast RM Price
+- **Freight Raw Material Quantity per Unit Impact** = [ROUNDUP(Actual Units × Actual Quantity per Unit ÷ Truck Capacity) − ROUNDUP(Actual Units × Forecast Quantity per Unit ÷ Truck Capacity)] × Forecast Freight Rate
+- **OT Hours at Forecast Efficiency** = MAX(0, Actual Units × Forecast Hours per Unit − Forecast Regular Hours)
+- **Labor Efficiency Variance** = (Actual OT Hours − OT Hours at Forecast Efficiency) × Forecast OT Rate
+
+
+</details>
+
 
 ## Project Highlights
 
 - **Full budget-to-actual lifecycle** — the budget was not a given dataset; it was built from a sales volume plan and standard cost assumptions, then actuals were simulated on top of it, driven by random fluctuation and realistic business events. 
+- **Rolling forecast with forecast-accuracy analysis** — the 9+3 forecast was built with only the information available at the Sep close (the announced Nov raw material price increase) and deliberately excludes what was not yet known. Two bridges separate what the forecast anticipated (Budget → Forecast) from what it missed (Forecast → Actual), showing it captured 91% of the full-year gross profit shortfall.
 - **Cross-account event consistency** — each simulated event (e.g., Mar's new order) cascades through every account it should affect (Revenue, Raw Materials, Inbound Freight, Direct Labor – Overtime), rather than being modeled in isolation.
 - **Fully reproducible** — the entire dataset is generated by a documented Python script, not entered manually.
 - **Signal over noise** — variance % labels appear only when a month exceeds ±3%, so material deviations stand out and normal fluctuation stays unlabeled.
 
 ## Skills Demonstrated
 
-- **FP&A / Accounting** — variance analysis (price, rate, volume, usage, efficiency,activity), standard costing, flexed budgeting
+- **FP&A / Accounting** — variance analysis (price, rate, volume, usage, efficiency, activity), standard costing, flexed budgeting, rolling forecast (9+3), forecast accuracy analysis
 - **Power BI** — data modeling, DAX, waterfall charts, KPI cards, trend charts
-- **Python (pandas / NumPy)** — synthetic dataset generation, combining seeded random fluctuation with scripted business events
+- **Python (pandas / NumPy)** — synthetic dataset generation (budget, actuals and 9+3 forecast), combining seeded random fluctuation with scripted business events
 - **Excel** — driver-based budget model
 
 
 ## Repository Contents
 
-- `budget_actual_generator.py` — Python script that builds the budget and simulates actuals; outputs `Budget_Actual.xlsx`.
-- `Budget_Actual.xlsx` — output of `budget_actual_generator.py`; contains fact tables (budget, actual, drivers, cost center, assumptions) used as the Power BI data source
+- `budget_actual_generator.py` — Python script that builds the budget, simulates actuals and builds the 9+3 forecast; outputs `Budget_Actual.xlsx`.
+- `Budget_Actual.xlsx` — output of `budget_actual_generator.py`; contains fact tables (budget, actual, forecast, drivers, cost center, assumptions) used as the Power BI data source
 - `Budget_Model.xlsx` — budget built independently in Excel
 - `budget_to_actual_bridge.xlsx` — step lists for the waterfall (bridge) charts
 - `budget_vs_actual.pbix` — Power BI report file

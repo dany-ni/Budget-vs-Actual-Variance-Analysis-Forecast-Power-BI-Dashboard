@@ -6,7 +6,7 @@ np.random.seed(42)
 
 MONTHS = list(range(1, 13))
 DATES = [f"2025-{m:02d}-01" for m in MONTHS]
-OUT_DIR = r"Budget vs Actual"
+OUT_DIR = r"\Budget vs Actual"
 
 
 
@@ -47,6 +47,10 @@ reduced_repair = 20000  # Aug: repair has already incurred in Jan
 shortfall_units = 400    # Jan: machine breakdown 
 add_units = 200    # Mar : 1 new order
 
+cutoff = 9                    # last closed month (Sep)
+last = cutoff - 1             
+n_fc = 12 - cutoff            # number of forecast months (Oct, Nov, Dec)
+fc_idx = range(cutoff, 12)    
 
 
 """
@@ -100,11 +104,11 @@ Actual raw materials
 """
 
 actual_rm_qty = [0] * 12
-actual_rm_per_unit = [budget_rm_per_unit] * 11 + [new_rm_per_unit]
+actual_rm_per_unit_list = [budget_rm_per_unit] * 11 + [new_rm_per_unit]
 actual_rm_price = [budget_rm_price] * 10 + [new_rm_price] * 2  
 
 for i in range(12):
-        qty = actual_revenue_qty[i] * actual_rm_per_unit[i]
+        qty = actual_revenue_qty[i] * actual_rm_per_unit_list[i]
         actual_rm_qty[i] = round(qty,2) 
 
 actual_rm_amount = [actual_rm_qty[i] * actual_rm_price[i] for i in range(12)]
@@ -211,7 +215,7 @@ fact_actual = build_fact(actual_amounts)
 
 
 """
-Build driver table
+Build driver table for Budget, Actual
 """
 
 def build_driver_table(qty_price_specs, labor_spec, extra_metrics=None):
@@ -265,8 +269,6 @@ actual_qty_price_specs = {
 actual_labor_spec = ("Production", actual_dl_reg_hours, actual_dl_reg_rate, actual_dl_ot_hours, actual_dl_ot_rate)
 
 
-actual_rm_per_unit = [round(actual_rm_qty[i] / actual_revenue_qty[i],2) for i in range(12)]
-
 budget_extra_metrics = [
     ("Production", "Raw Materials", "TonsPerUnit", [budget_rm_per_unit] * 12, "Ton/Unit"),
     ("Production", "Direct Labor – Regular", "HoursPerUnit", [budget_standard_time] * 12, "Hour/Unit"),
@@ -274,7 +276,7 @@ budget_extra_metrics = [
 
 
 actual_extra_metrics = [
-    ("Production", "Raw Materials", "TonsPerUnit", actual_rm_per_unit, "Ton/Unit"),
+    ("Production", "Raw Materials", "TonsPerUnit", actual_rm_per_unit_list, "Ton/Unit"),
     ("Production", "Direct Labor – Regular", "HoursPerUnit", actual_standard_times, "Hour/Unit"),
 ]
 
@@ -291,9 +293,80 @@ known_events_rows = [
 ]
 
 
-fact_budget_driver = build_driver_table(budget_qty_price_specs, budget_labor_spec, budget_extra_metrics)
-fact_actual_driver = build_driver_table(actual_qty_price_specs, actual_labor_spec, actual_extra_metrics)
-fact_actual_driver = pd.concat([fact_actual_driver, pd.DataFrame(known_events_rows)], ignore_index=True)
+budget_driver = build_driver_table(budget_qty_price_specs, budget_labor_spec, budget_extra_metrics)
+actual_driver = build_driver_table(actual_qty_price_specs, actual_labor_spec, actual_extra_metrics)
+actual_driver = pd.concat([actual_driver, pd.DataFrame(known_events_rows)], ignore_index=True)
+
+
+"""
+Build  9+3 Forcast.  Jan-Sep : Actual, Oct-Dec : Forecast
+  - Known: everything that already happened in Jan-Sep ,
+           and the supplier's announced raw material price increase effective Nov.
+  - NOT known: Nov hours per unit increase and Dec raw material
+               quantity per unit increase. They stay at Standard.
+"""
+
+
+def forecast(actual_list, forecast_list):
+    return actual_list[:cutoff] + forecast_list
+
+# Sales volume = Budget
+f_units = forecast(actual_revenue_qty, budget_revenue_qty[cutoff:])
+
+# Prices and rates = latest actual (Sep)
+f_price = forecast(actual_revenue_price, [actual_revenue_price[last]] * n_fc)
+f_reg_rate = forecast(actual_dl_reg_rate, [actual_dl_reg_rate[last]] * n_fc)
+f_ot_rate = forecast(actual_dl_ot_rate, [actual_dl_ot_rate[last]] * n_fc)
+f_freight_price = forecast(actual_freight_price, [actual_freight_price[last]] * n_fc)
+
+# Raw material price: latest actual (Sep) for Oct, new price from Nov 
+f_rm_price = forecast(actual_rm_price,
+                     [actual_rm_price[last], new_rm_price, new_rm_price])
+
+# Usage standards = Standard = latest actual (Sep)
+f_rm_per_unit = forecast(actual_rm_per_unit_list, [actual_rm_per_unit_list[last]] * n_fc)
+f_hours_per_unit = forecast(actual_standard_times, [actual_standard_times[last]] * n_fc)
+
+f_rm_qty = forecast(actual_rm_qty, [round(f_units[i] * f_rm_per_unit[i], 2) for i in fc_idx])
+
+f_dl_reg_hours = [regular_hours] * 12
+f_dl_ot_hours = forecast(actual_dl_ot_hours,
+                        [round(max(0, f_units[i] * f_hours_per_unit[i] - regular_hours), 2) for i in fc_idx])
+
+f_freight_qty = forecast(actual_freight_qty, [math.ceil(f_rm_qty[i] / truck) for i in fc_idx])
+f_rm_maint = forecast(actual_rm_maint, budget_rm_maint[cutoff:])
+
+forecast_amounts = {
+    "Revenue": [f_units[i] * f_price[i] for i in range(12)],
+    "Raw Materials": [f_rm_qty[i] * f_rm_price[i] for i in range(12)],
+    "Direct Labor – Regular": [regular_hours * f_reg_rate[i] for i in range(12)],
+    "Direct Labor – Overtime": [f_dl_ot_hours[i] * f_ot_rate[i] for i in range(12)],
+    "Repairs & Maintenance": f_rm_maint,
+    "Inbound Freight": [f_freight_qty[i] * f_freight_price[i] for i in range(12)],
+}
+
+
+def tag_data_type(df):
+    """Actual for closed months, Forecast for open months."""
+    df["DataType"] = np.where(pd.to_datetime(df["Date"]).dt.month <= cutoff, "Actual", "Forecast")
+    return df
+
+
+fact_forecast = tag_data_type(build_fact(forecast_amounts))
+
+forecast_qty_price_specs = {
+    "Revenue": ("Sales", f_units, f_price, "Units", "EUR/Unit"),
+    "Raw Materials": ("Production", f_rm_qty, f_rm_price, "Tons", "EUR/Ton"),
+    "Inbound Freight": ("Inbound Logistics", f_freight_qty, f_freight_price, "Trucks", "EUR/Truck"),
+}
+forecast_labor_spec = ("Production", f_dl_reg_hours, f_reg_rate, f_dl_ot_hours, f_ot_rate)
+forecast_extra_metrics = [
+    ("Production", "Raw Materials", "TonsPerUnit", f_rm_per_unit, "Ton/Unit"),
+    ("Production", "Direct Labor – Regular", "HoursPerUnit", f_hours_per_unit, "Hour/Unit"),
+]
+forecast_driver = tag_data_type(build_driver_table(forecast_qty_price_specs, forecast_labor_spec, forecast_extra_metrics))
+
+
 
 assumptions = pd.DataFrame([ 
     {"Parameter": "Workers", "Value": workers, "UnitOfMeasure": "Headcount", "Account": "Direct Labor – Regular"},
@@ -317,8 +390,10 @@ Export
 with pd.ExcelWriter(f"{OUT_DIR}/Budget_Actual.xlsx", engine="openpyxl") as writer:
     fact_budget.to_excel(writer, sheet_name="Fact_Budget", index=False)
     fact_actual.to_excel(writer, sheet_name="Fact_Actual", index=False)
-    fact_budget_driver.to_excel(writer, sheet_name="Budget_Drivers", index=False)
-    fact_actual_driver.to_excel(writer, sheet_name="Actual_Drivers", index=False)
+    budget_driver.to_excel(writer, sheet_name="Budget_Drivers", index=False)
+    actual_driver.to_excel(writer, sheet_name="Actual_Drivers", index=False)
+    fact_forecast.to_excel(writer, sheet_name="Fact_Forecast", index=False)
+    forecast_driver.to_excel(writer, sheet_name="Forecast_Drivers", index=False)
     costcenter.to_excel(writer, sheet_name="Cost Center", index=False)
     assumptions.to_excel(writer, sheet_name="Assumptions", index=False)
 
@@ -329,8 +404,7 @@ Details
 
 summary = fact_budget.groupby("Account")["Amount"].sum().rename("Budget_Total").to_frame()
 summary["Actual_Total"] = fact_actual.groupby("Account")["Amount"].sum()
-summary["Variance"] = summary["Actual_Total"] - summary["Budget_Total"]
-summary["Variance %"] = round((summary["Variance"] / summary["Budget_Total"] * 100), 2)
+summary["Forcast_Total"] = fact_forecast.groupby("Account")["Amount"].sum()
 print(summary)
 
 
