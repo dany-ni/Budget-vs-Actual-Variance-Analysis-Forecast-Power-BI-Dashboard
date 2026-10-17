@@ -36,6 +36,7 @@ A Power BI dashboard analyzing budget-to-actual performance for a simulated manu
 <img src="screenshots/07_capacity_efficiency_analysis.png" width="900" alt="Capacity Utilization">
 
 <img src="screenshots/08_recommendation.png" width="900" alt="Recommendation">
+
 The remaining pages are in the [PDF](budget_vs_actual.pdf).
 
 
