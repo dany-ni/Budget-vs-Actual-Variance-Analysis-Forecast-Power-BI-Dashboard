@@ -6,7 +6,7 @@ np.random.seed(42)
 
 MONTHS = list(range(1, 13))
 DATES = [f"2025-{m:02d}-01" for m in MONTHS]
-OUT_DIR = r"\Budget vs Actual"
+OUT_DIR = "."
 
 
 
@@ -299,7 +299,7 @@ actual_driver = pd.concat([actual_driver, pd.DataFrame(known_events_rows)], igno
 
 
 """
-Build  9+3 Forcast.  Jan-Sep : Actual, Oct-Dec : Forecast
+Build  9+3 Forecast.  Jan-Sep : Actual, Oct-Dec : Forecast
   - Known: everything that already happened in Jan-Sep ,
            and the supplier's announced raw material price increase effective Nov.
   - NOT known: Nov hours per unit increase and Dec raw material
@@ -404,7 +404,7 @@ Details
 
 summary = fact_budget.groupby("Account")["Amount"].sum().rename("Budget_Total").to_frame()
 summary["Actual_Total"] = fact_actual.groupby("Account")["Amount"].sum()
-summary["Forcast_Total"] = fact_forecast.groupby("Account")["Amount"].sum()
+summary["Forecast_Total"] = fact_forecast.groupby("Account")["Amount"].sum()
 print(summary)
 
 
